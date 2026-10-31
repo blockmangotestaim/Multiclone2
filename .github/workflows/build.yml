@@ -18,8 +18,8 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
-
+          java-version: "21"
+          
       - name: Install NDK and build tools (using the SDK already on the runner)
         run: |
           SDKM=$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager | tail -n1)
