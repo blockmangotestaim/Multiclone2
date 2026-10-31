@@ -1,0 +1,48 @@
+plugins { id 'com.android.application' }
+
+def engineModule = (findProperty('engineModule') ?: 'Bcore')
+def tSdk = (findProperty('targetSdk') ?: '28').toInteger()
+def useEngineSource = file("${rootDir}/engine-modules.gradle").exists()
+
+android {
+    namespace 'com.example.multiclone'
+    compileSdk 34
+    ndkVersion (findProperty('ndkVersion') ?: '29.0.13846066')
+
+    defaultConfig {
+        applicationId 'com.example.multiclone'
+        minSdk 21
+        // Virtual-app engines behave best with a low targetSdk (<= 28).
+        targetSdk tSdk
+        versionCode 1
+        versionName '1.0'
+        ndk { abiFilters 'armeabi-v7a', 'arm64-v8a' }   // 32-bit + 64-bit
+    }
+
+    buildTypes {
+        debug { debuggable true }   // signed automatically with the default debug key
+        release { minifyEnabled false }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    packagingOptions {
+        jniLibs { useLegacyPackaging = true }
+        resources { excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*'] }
+    }
+    lint { abortOnError false; checkReleaseBuilds false }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'com.google.android.material:material:1.11.0'
+
+    // Option A (used by the workflow): engine library module built from source.
+    if (useEngineSource) implementation project(":${engineModule}")
+    // Option B: drop a prebuilt engine AAR into app/libs/.
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'])
+}

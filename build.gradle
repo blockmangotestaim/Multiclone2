@@ -1,0 +1,19 @@
+plugins {
+    id 'com.android.application' version '8.5.2' apply false
+    id 'com.android.library' version '8.5.2' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
+}
+
+// AGP 8 requires a namespace. Older engine modules only declare package= in the
+// manifest, so derive the namespace from it when missing.
+subprojects {
+    afterEvaluate { p ->
+        if (p.plugins.hasPlugin('com.android.library') && p.android.namespace == null) {
+            def m = new File(p.projectDir, 'src/main/AndroidManifest.xml')
+            if (m.exists()) {
+                def pkg = new XmlSlurper().parse(m).@package.text()
+                if (pkg) p.android.namespace = pkg
+            }
+        }
+    }
+}
